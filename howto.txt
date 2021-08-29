@@ -1,0 +1,17 @@
+# Get the certificate from LetsEncrypt
+## If use Let's encrypt
+/home/ubuntu/certbot-auto renew --quiet --no-self-upgrade
+
+# Convert cert to PKCS #12 format
+openssl pkcs12 -export -in /root/unifi2.paocloud.tech/server.pem -inkey /root/unifi2.paocloud.tech/server.key -out /root/unifi2.paocloud.tech/cert.p12 -name unifi -CAfile /root/unifi2.paocloud.tech/ca.pem
+
+# Back up current keystore file
+mv -f /var/lib/unifi/keystore /var/lib/unifi/keystore.backup
+
+# Load it into the java keystore that UBNT understands
+keytool -importkeystore -deststorepass aircontrolenterprise -destkeypass aircontrolenterprise -destkeystore /var/lib/unifi/keystore -srckeystore /root/unifi2.paocloud.tech/cert.p12 -srcstoretype PKCS12 -srcstorepass 12345678 -alias unifi -noprompt
+
+# Clean up and use new cert
+rm /home/ubuntu/cert.p12
+service unifi restart
+service unifi status
